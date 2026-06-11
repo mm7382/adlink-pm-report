@@ -1,0 +1,619 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ADLink PM Report</title>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <style>
+    :root {
+      --bg: #f4f6f7;
+      --panel: #ffffff;
+      --text: #1b1f24;
+      --muted: #5e6a75;
+      --line: #d9dee2;
+      --red: #c8102e;
+      --red-dark: #9f0c23;
+      --se: #006b6f;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", sans-serif;
+    }
+
+    body::after {
+      content: "Michael Chuang · ADLINK PM";
+      position: fixed;
+      right: 18px;
+      bottom: 14px;
+      color: rgba(27, 31, 36, 0.28);
+      font-size: 12px;
+      font-weight: 800;
+      pointer-events: none;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 28px clamp(20px, 5vw, 56px);
+      border-bottom: 4px solid var(--red);
+      background: linear-gradient(90deg, #ffffff 0%, #ffffff 58%, #eef7f7 100%);
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      margin-bottom: 10px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
+    .brand span {
+      display: inline-flex;
+      align-items: center;
+      min-height: 22px;
+      padding: 0 8px;
+      border-left: 6px solid var(--red);
+      background: #f4f6f7;
+      color: var(--text);
+    }
+
+    h1, h2, p { margin: 0; }
+
+    h1 {
+      position: relative;
+      padding-left: 18px;
+      font-size: 25px;
+      line-height: 1.2;
+    }
+
+    h1::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 3px;
+      width: 6px;
+      height: 25px;
+      background: var(--red);
+    }
+
+    p {
+      margin-top: 6px;
+      color: var(--muted);
+    }
+
+    .shell {
+      width: min(1120px, calc(100% - 40px));
+      margin: 32px auto 70px;
+    }
+
+    .panel, .card, .summaryBox {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: 0 8px 20px rgba(27, 31, 36, 0.07);
+    }
+
+    .panel {
+      padding: 24px;
+      margin-bottom: 18px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr auto;
+      gap: 14px;
+      align-items: end;
+    }
+
+    label {
+      display: grid;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    input, select, button {
+      min-height: 42px;
+      border-radius: 6px;
+      font: inherit;
+    }
+
+    input, select {
+      width: 100%;
+      border: 1px solid var(--line);
+      padding: 9px 11px;
+      background: #fff;
+      color: var(--text);
+    }
+
+    button, .linkButton {
+      border: 0;
+      background: var(--red);
+      color: #fff;
+      cursor: pointer;
+      font-weight: 700;
+      padding: 0 16px;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 42px;
+      border-radius: 6px;
+      white-space: nowrap;
+    }
+
+    button:hover, .linkButton:hover { background: var(--red-dark); }
+    button:disabled { opacity: 0.6; cursor: wait; }
+
+    .status {
+      min-height: 24px;
+      color: var(--muted);
+    }
+
+    .status.error { color: var(--red-dark); }
+    .status.ok { color: var(--se); }
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .summaryBox {
+      padding: 18px;
+    }
+
+    .summaryBox .label {
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 8px;
+    }
+
+    .summaryBox .value {
+      font-size: 24px;
+      font-weight: 900;
+    }
+
+    .toolbar {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1.5fr auto;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .card {
+      padding: 20px 22px;
+      margin-bottom: 14px;
+      border-left: 7px solid var(--red);
+    }
+
+    .cardTop {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .badge, .pill {
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 13px;
+      font-weight: 900;
+    }
+
+    .badge {
+      background: #fde8ed;
+      color: var(--red-dark);
+    }
+
+    .pill {
+      background: #eef7f7;
+      color: var(--se);
+      border: 1px solid #bfd9da;
+    }
+
+    .project {
+      font-size: 18px;
+      font-weight: 850;
+    }
+
+    .issue {
+      background: #fff8f9;
+      border: 1px solid #f4c4ce;
+      border-radius: 8px;
+      padding: 14px;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      word-break: break-word;
+    }
+
+    .meta {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .empty {
+      padding: 34px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .loginOnly .app { display: none; }
+    .loggedIn .login { display: none; }
+
+    @media (max-width: 760px) {
+      .topbar, .grid, .toolbar, .summary {
+        grid-template-columns: 1fr;
+      }
+      .topbar {
+        display: grid;
+      }
+    }
+  </style>
+</head>
+<body class="loginOnly">
+  <header class="topbar">
+    <div>
+      <div class="brand"><span>ADLINK</span> SE Project Tools</div>
+      <h1>ADLink PM Report</h1>
+      <p>GitHub Pages 靜態版：Excel 只在你的瀏覽器內分析，不會上傳到伺服器。</p>
+    </div>
+  </header>
+
+  <main class="shell">
+    <section class="panel login">
+      <div class="grid" style="grid-template-columns: 1fr 1fr auto;">
+        <label>
+          帳號名稱
+          <input id="username" type="text" autocomplete="username" value="Michael.Chuang">
+        </label>
+        <label>
+          密碼
+          <input id="password" type="password" autocomplete="current-password" value="Michael.Chuang">
+        </label>
+        <button id="loginButton" type="button">登入</button>
+      </div>
+      <p id="loginStatus" class="status"></p>
+    </section>
+
+    <section class="app">
+      <section class="panel">
+        <div class="grid">
+          <label>
+            Excel 檔案
+            <input id="excelInput" type="file" accept=".xlsx,.xls,.xlsm" multiple>
+          </label>
+          <label>
+            分析類型
+            <select id="mode">
+              <option value="critical">Critical Issues</option>
+              <option value="red-blue">紅藍字體</option>
+              <option value="both">兩種都產生</option>
+            </select>
+          </label>
+          <button id="analyzeButton" type="button">產生報告</button>
+        </div>
+        <p id="status" class="status"></p>
+      </section>
+
+      <section id="summary" class="summary" hidden>
+        <div class="summaryBox"><div class="label">目前顯示</div><div id="visibleCount" class="value">0</div></div>
+        <div class="summaryBox"><div class="label">全部結果</div><div id="totalCount" class="value">0</div></div>
+        <div class="summaryBox"><div class="label">分類數</div><div id="categoryCount" class="value">0</div></div>
+        <div class="summaryBox"><div class="label">Excel 檔案數</div><div id="fileCount" class="value">0</div></div>
+      </section>
+
+      <section id="toolbar" class="toolbar" hidden>
+        <select id="categoryFilter"><option value="all">全部分類</option></select>
+        <select id="fileFilter"><option value="all">全部 Excel 檔案</option></select>
+        <input id="searchInput" type="text" placeholder="搜尋 Project、Issue、Excel、Sheet、Row...">
+        <button type="button" onclick="window.print()">列印 / PDF</button>
+      </section>
+
+      <section id="downloadPanel" class="panel" hidden>
+        <a id="downloadLink" class="linkButton" download="adlink_pm_report.html">下載 HTML Report</a>
+      </section>
+
+      <section id="cards"></section>
+    </section>
+  </main>
+
+  <script>
+    const VALID_USER = "Michael.Chuang";
+    const VALID_PASS = "Michael.Chuang";
+    const EXCLUDE = ["done", "closed", "resolved", "fixed"];
+    const CATEGORIES = [
+      "Linux BSP", "EMC", "RF", "Safety", "ME", "Thermal", "SIE", "SE",
+      "HW1", "HW2", "HW3", "HW4", "HW5", "HW6", "BIOS", "FW", "FPGA"
+    ];
+
+    const state = { items: [] };
+    const $ = (id) => document.getElementById(id);
+
+    function cleanText(value) {
+      return String(value ?? "").replace(/[\\r\\n\\t]/g, " ").replace(/\\s+/g, " ").trim();
+    }
+
+    function escapeHtml(text) {
+      return String(text ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function normalizeCategory(raw) {
+      const lower = cleanText(raw).toLowerCase();
+      if (lower.includes("linux") && lower.includes("bsp")) return "Linux BSP";
+      if (lower.includes("bios")) return "BIOS";
+      if (lower.includes("fw") || lower.includes("firmware")) return "FW";
+      if (lower.includes("fpga")) return "FPGA";
+      for (const hw of ["HW1", "HW2", "HW3", "HW4", "HW5", "HW6"]) {
+        if (lower.includes(hw.toLowerCase())) return hw;
+      }
+      if (lower === "se") return "SE";
+      if (lower.includes("sie") || lower.includes("sed")) return "SIE";
+      if (lower.includes("me") || lower.includes("mechanical") || lower.includes("機構")) return "ME";
+      if (lower.includes("thermal") || lower.includes("therma") || lower.includes("散熱")) return "Thermal";
+      if (lower.includes("rf")) return "RF";
+      if (lower.includes("emc")) return "EMC";
+      if (lower.includes("safety")) return "Safety";
+      return cleanText(raw) || "Other";
+    }
+
+    function isExcluded(text) {
+      const lower = cleanText(text).toLowerCase();
+      if (!lower) return false;
+      if (EXCLUDE.includes(lower)) return true;
+      return lower.length < 20 && EXCLUDE.some((word) => lower.includes(word));
+    }
+
+    function makeCriticalRegex() {
+      const catPattern = CATEGORIES
+        .slice()
+        .sort((a, b) => b.length - a.length)
+        .map((cat) => cat.trim().split(/\\s+/).map((part) => part.replace(/[.*+?^${}()|[\\]\\\\]/g, "\\\\$&")).join("\\\\s+"))
+        .join("|");
+      return new RegExp(`(critical)\\\\s+(${catPattern})\\\\s+(open)\\\\s*[:：]?\\\\s*([\\\\s\\\\S]*?)(?=(critical)\\\\s+(${catPattern})\\\\s+(open)|$)`, "gi");
+    }
+
+    function extractCriticalItems(text) {
+      const value = cleanText(text);
+      if (!/critical/i.test(value)) return [];
+      const regex = makeCriticalRegex();
+      const items = [];
+      let match;
+      while ((match = regex.exec(value)) !== null) {
+        const category = normalizeCategory(match[2]);
+        let detail = cleanText(match[4]) || "(無敘述)";
+        for (const sym of ["**", "=>", "|"]) {
+          if (detail.includes(sym)) detail = detail.split(sym)[0].trim();
+        }
+        if (detail.length > 1000) detail = detail.slice(0, 1000).trim() + " ...";
+        if (!isExcluded(detail)) {
+          items.push({
+            category,
+            title: `Critical ${category} open`,
+            detail,
+            issue: `Critical ${category} open：${detail}`,
+          });
+        }
+      }
+      return items;
+    }
+
+    function findProjectColumn(rows) {
+      for (let r = 0; r < Math.min(rows.length, 20); r++) {
+        for (let c = 0; c < (rows[r] || []).length; c++) {
+          const text = cleanText(rows[r][c]).toLowerCase();
+          if (text === "project" || text === "project name" || text.includes("project:")) return c;
+        }
+      }
+      return -1;
+    }
+
+    async function readWorkbook(file) {
+      const data = await file.arrayBuffer();
+      return XLSX.read(data, { type: "array", cellStyles: true });
+    }
+
+    function scanCritical(workbook, fileName) {
+      const results = [];
+      for (const sheetName of workbook.SheetNames) {
+        const sheet = workbook.Sheets[sheetName];
+        const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "", raw: false });
+        const projectCol = findProjectColumn(rows);
+        let lastProject = "";
+        rows.forEach((row, rowIndex) => {
+          if (!row) return;
+          const currentProject = projectCol >= 0 ? cleanText(row[projectCol]) : "";
+          if (currentProject) lastProject = currentProject;
+          const project = currentProject || lastProject || "N/A";
+          row.forEach((cell) => {
+            for (const item of extractCriticalItems(cell)) {
+              results.push({
+                project,
+                category: item.category,
+                issue: item.issue,
+                file: fileName,
+                sheet: sheetName,
+                row: rowIndex + 1,
+              });
+            }
+          });
+        });
+      }
+      return results;
+    }
+
+    function getCellText(sheet, address) {
+      return cleanText(sheet[address]?.w ?? sheet[address]?.v ?? "");
+    }
+
+    function getFontColor(cell) {
+      const color = cell?.s?.font?.color;
+      return String(color?.rgb || color?.indexed || color?.theme || "").toUpperCase();
+    }
+
+    function classifyFontColor(color) {
+      if (!color) return "";
+      if (/(FF0000|C00000|CC0000|B00000|A61C00|C65911)/.test(color)) return "Red";
+      if (/(0000FF|0070C0|0563C1|1155CC|1F4E79|2F75B5|00B0F0)/.test(color)) return "Blue";
+      return "";
+    }
+
+    function scanRedBlue(workbook, fileName) {
+      const results = [];
+      for (const sheetName of workbook.SheetNames) {
+        const sheet = workbook.Sheets[sheetName];
+        const range = XLSX.utils.decode_range(sheet["!ref"] || "A1:A1");
+        for (let r = range.s.r; r <= range.e.r; r++) {
+          for (let c = range.s.c; c <= range.e.c; c++) {
+            const address = XLSX.utils.encode_cell({ r, c });
+            const cell = sheet[address];
+            if (!cell) continue;
+            const colorType = classifyFontColor(getFontColor(cell));
+            const text = getCellText(sheet, address);
+            if (colorType && text) {
+              results.push({
+                project: "N/A",
+                category: colorType,
+                issue: text,
+                file: fileName,
+                sheet: sheetName,
+                row: r + 1,
+              });
+            }
+          }
+        }
+      }
+      return results;
+    }
+
+    function setStatus(message, kind = "") {
+      $("status").textContent = message;
+      $("status").className = `status ${kind}`.trim();
+    }
+
+    function unique(values) {
+      return Array.from(new Set(values.filter(Boolean))).sort((a, b) => String(a).localeCompare(String(b)));
+    }
+
+    function fillSelect(select, values, label) {
+      select.innerHTML = `<option value="all">${label}</option>` + values.map((v) => `<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join("");
+    }
+
+    function render() {
+      const category = $("categoryFilter").value;
+      const file = $("fileFilter").value;
+      const keyword = cleanText($("searchInput").value).toLowerCase();
+      const filtered = state.items.filter((item) => {
+        const search = [item.category, item.project, item.issue, item.file, item.sheet, item.row].join(" ").toLowerCase();
+        return (category === "all" || item.category === category) &&
+          (file === "all" || item.file === file) &&
+          (!keyword || search.includes(keyword));
+      });
+
+      $("visibleCount").textContent = filtered.length;
+      $("cards").innerHTML = filtered.length ? filtered.map((item, index) => `
+        <article class="card">
+          <div class="cardTop">
+            <span class="badge">#${index + 1}</span>
+            <span class="pill">${escapeHtml(item.category)}</span>
+            <span class="project">${escapeHtml(item.project)}</span>
+          </div>
+          <div class="issue">${escapeHtml(item.issue)}</div>
+          <div class="meta">${escapeHtml(item.file)} / ${escapeHtml(item.sheet)} / Row ${escapeHtml(item.row)}</div>
+        </article>
+      `).join("") : `<section class="panel empty">目前沒有符合條件的結果。</section>`;
+    }
+
+    function makeReportHtml(items) {
+      const generatedAt = new Date().toLocaleString("zh-TW", { timeZone: "Asia/Taipei" });
+      const cards = items.map((item, index) => `
+        <article class="card">
+          <div class="cardTop"><span class="badge">#${index + 1}</span><span class="pill">${escapeHtml(item.category)}</span><span class="project">${escapeHtml(item.project)}</span></div>
+          <div class="issue">${escapeHtml(item.issue)}</div>
+          <div class="meta">${escapeHtml(item.file)} / ${escapeHtml(item.sheet)} / Row ${escapeHtml(item.row)}</div>
+        </article>
+      `).join("");
+      return `<!doctype html>${document.documentElement.outerHTML
+        .replace(/<script[\s\S]*?<\/script>/g, "")
+        .replace(/<body[\s\S]*?<\/body>/, `<body class="loggedIn"><header class="topbar"><div><div class="brand"><span>ADLINK</span> SE Project Intelligence Report</div><h1>ADLink PM HTML Report</h1><p>產生時間：${escapeHtml(generatedAt)}</p></div></header><main class="shell">${cards || '<section class="panel empty">目前沒有結果。</section>'}</main></body>`)}`;
+    }
+
+    $("loginButton").addEventListener("click", () => {
+      if ($("username").value === VALID_USER && $("password").value === VALID_PASS) {
+        document.body.className = "loggedIn";
+      } else {
+        $("loginStatus").textContent = "帳號或密碼錯誤。";
+        $("loginStatus").className = "status error";
+      }
+    });
+
+    $("analyzeButton").addEventListener("click", async () => {
+      const files = Array.from($("excelInput").files || []);
+      const mode = $("mode").value;
+      if (!files.length) {
+        setStatus("請選擇 Excel 檔案。", "error");
+        return;
+      }
+
+      $("analyzeButton").disabled = true;
+      setStatus("正在分析 Excel，請稍候...", "");
+      state.items = [];
+
+      try {
+        for (const file of files) {
+          if (!/\\.(xlsx|xls|xlsm)$/i.test(file.name)) throw new Error(`不支援的檔案：${file.name}`);
+          const workbook = await readWorkbook(file);
+          if (mode === "critical" || mode === "both") state.items.push(...scanCritical(workbook, file.name));
+          if (mode === "red-blue" || mode === "both") state.items.push(...scanRedBlue(workbook, file.name));
+        }
+
+        const categories = unique(state.items.map((item) => item.category));
+        const filesFound = unique(state.items.map((item) => item.file));
+        $("totalCount").textContent = state.items.length;
+        $("categoryCount").textContent = categories.length;
+        $("fileCount").textContent = filesFound.length;
+        fillSelect($("categoryFilter"), categories, "全部分類");
+        fillSelect($("fileFilter"), filesFound, "全部 Excel 檔案");
+        $("summary").hidden = false;
+        $("toolbar").hidden = false;
+        $("downloadPanel").hidden = false;
+
+        const blob = new Blob([makeReportHtml(state.items)], { type: "text/html" });
+        $("downloadLink").href = URL.createObjectURL(blob);
+        $("downloadLink").download = `adlink_pm_report_${new Date().toISOString().slice(0, 10).replace(/-/g, "")}.html`;
+
+        render();
+        setStatus(`完成，共找到 ${state.items.length} 筆結果。`, "ok");
+      } catch (err) {
+        setStatus(err.message, "error");
+      } finally {
+        $("analyzeButton").disabled = false;
+      }
+    });
+
+    $("categoryFilter").addEventListener("change", render);
+    $("fileFilter").addEventListener("change", render);
+    $("searchInput").addEventListener("input", render);
+  </script>
+</body>
+</html>
