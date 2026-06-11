@@ -397,14 +397,36 @@
       "Michael Chuang": "Michael Chuang",
       "Sean Ba": "Sean Ba",
     };
+    const NOTIFY_ENDPOINT = "";
     const EXCLUDE = ["done", "closed", "resolved", "fixed"];
     const CATEGORIES = [
       "Linux BSP", "EMC", "RF", "Safety", "ME", "Thermal", "SIE", "SE",
       "HW1", "HW2", "HW3", "HW4", "HW5", "HW6", "BIOS", "FW", "FPGA"
     ];
 
-    const state = { items: [] };
+    const state = { items: [], user: "" };
     const $ = (id) => document.getElementById(id);
+
+    function notifyActivity(action, details = {}) {
+      if (!NOTIFY_ENDPOINT) return;
+
+      const payload = {
+        action,
+        user: state.user || details.user || "",
+        page: location.href,
+        timestamp: new Date().toISOString(),
+        userAgent: navigator.userAgent,
+        details,
+      };
+
+      fetch(NOTIFY_ENDPOINT, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+        mode: "cors",
+        keepalive: true,
+      }).catch(() => {});
+    }
 
     function cleanText(value) {
       return String(value ?? "").replace(/[\r\n\t]/g, " ").replace(/\s+/g, " ").trim();
@@ -665,18 +687,22 @@
     $("loginButton").addEventListener("click", () => {
       const username = $("username").value.trim();
       if (VALID_USERS[username] && $("password").value === VALID_USERS[username]) {
+        state.user = username;
         document.body.className = "loggedIn";
         $("sessionUser").textContent = `已登入：${username}`;
         $("loginNotice").hidden = false;
         $("loginNotice").textContent = `已登入：${username}`;
         $("loginStatus").textContent = "";
+        notifyActivity("login", { user: username });
       } else {
         $("loginStatus").textContent = "帳號或密碼錯誤。";
         $("loginStatus").className = "status error";
+        notifyActivity("login_failed", { user: username || "N/A" });
       }
     });
 
     $("logoutButton").addEventListener("click", () => {
+      notifyActivity("logout", { user: state.user || "N/A" });
       document.body.className = "loginOnly";
       $("sessionUser").textContent = "";
       $("loginNotice").hidden = true;
@@ -689,6 +715,7 @@
       $("excelInput").value = "";
       $("searchInput").value = "";
       state.items = [];
+      state.user = "";
     });
 
     $("analyzeButton").addEventListener("click", async () => {
@@ -704,6 +731,11 @@
       state.items = [];
 
       try {
+        notifyActivity("analyze_started", {
+          mode,
+          files: files.map((file) => file.name),
+        });
+
         for (const file of files) {
           if (!/\.(xlsx|xls|xlsm)$/i.test(file.name)) throw new Error(`不支援的檔案：${file.name}`);
           const workbook = await readWorkbook(file);
@@ -728,8 +760,19 @@
 
         render();
         setStatus(`完成，共找到 ${state.items.length} 筆結果。`, "ok");
+        notifyActivity("report_generated", {
+          mode,
+          files: files.map((file) => file.name),
+          resultCount: state.items.length,
+          categories,
+        });
       } catch (err) {
         setStatus(err.message, "error");
+        notifyActivity("analyze_failed", {
+          mode,
+          files: files.map((file) => file.name),
+          error: err.message,
+        });
       } finally {
         $("analyzeButton").disabled = false;
       }
@@ -738,6 +781,11 @@
     $("categoryFilter").addEventListener("change", render);
     $("fileFilter").addEventListener("change", render);
     $("searchInput").addEventListener("input", render);
+    $("downloadLink").addEventListener("click", () => {
+      notifyActivity("download_report", {
+        resultCount: state.items.length,
+      });
+    });
   </script>
 </body>
 </html>
