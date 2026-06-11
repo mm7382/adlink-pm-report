@@ -12,7 +12,7 @@ services:
       - key: WEB_ADMIN_USERNAME
         value: Michael.Chuang
       - key: WEB_ADMIN_PASSWORD
-        sync: false
+        value: Michael.Chuang
       - key: WEB_MAX_UPLOAD_MB
         value: "50"
       - key: WEB_JOB_RETENTION_DAYS
