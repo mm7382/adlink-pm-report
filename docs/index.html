@@ -581,7 +581,7 @@
 
       try {
         for (const file of files) {
-          if (!/\\.(xlsx|xls|xlsm)$/i.test(file.name)) throw new Error(`不支援的檔案：${file.name}`);
+          if (!/\.(xlsx|xls|xlsm)$/i.test(file.name)) throw new Error(`不支援的檔案：${file.name}`);
           const workbook = await readWorkbook(file);
           if (mode === "critical" || mode === "both") state.items.push(...scanCritical(workbook, file.name));
           if (mode === "red-blue" || mode === "both") state.items.push(...scanRedBlue(workbook, file.name));
