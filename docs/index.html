@@ -398,7 +398,7 @@
     const $ = (id) => document.getElementById(id);
 
     function cleanText(value) {
-      return String(value ?? "").replace(/[\\r\\n\\t]/g, " ").replace(/\\s+/g, " ").trim();
+      return String(value ?? "").replace(/[\r\n\t]/g, " ").replace(/\s+/g, " ").trim();
     }
 
     function escapeHtml(text) {
@@ -436,13 +436,46 @@
       return lower.length < 20 && EXCLUDE.some((word) => lower.includes(word));
     }
 
+    function normalizeForDuplicate(text) {
+      return cleanText(text)
+        .toLowerCase()
+        .replace(/\s+/g, " ")
+        .replace(/[，。,.]/g, "")
+        .trim();
+    }
+
+    function isSheetHidden(workbook, sheetName) {
+      const sheetsInfo = workbook?.Workbook?.Sheets || [];
+      const info = sheetsInfo.find((sheet) => sheet.name === sheetName);
+      return Number(info?.Hidden || 0) !== 0;
+    }
+
+    function isRowHidden(sheet, rowIndex) {
+      const rowInfo = sheet?.["!rows"]?.[rowIndex];
+      return !!(rowInfo && rowInfo.hidden);
+    }
+
+    function isColHidden(sheet, colIndex) {
+      const colInfo = sheet?.["!cols"]?.[colIndex];
+      return !!(colInfo && colInfo.hidden);
+    }
+
+    function makeDuplicateKey(project, category, issue, file, sheet, row) {
+      return [
+        normalizeForDuplicate(project),
+        normalizeForDuplicate(category),
+        normalizeForDuplicate(issue),
+        normalizeForDuplicate(`${file} / ${sheet} / Row ${row}`),
+      ].join("__");
+    }
+
     function makeCriticalRegex() {
       const catPattern = CATEGORIES
         .slice()
         .sort((a, b) => b.length - a.length)
-        .map((cat) => cat.trim().split(/\\s+/).map((part) => part.replace(/[.*+?^${}()|[\\]\\\\]/g, "\\\\$&")).join("\\\\s+"))
+        .map((cat) => cat.trim().split(/\s+/).map((part) => part.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("\\s+"))
         .join("|");
-      return new RegExp(`(critical)\\\\s+(${catPattern})\\\\s+(open)\\\\s*[:：]?\\\\s*([\\\\s\\\\S]*?)(?=(critical)\\\\s+(${catPattern})\\\\s+(open)|$)`, "gi");
+      return new RegExp(`(critical)\\s+(${catPattern})\\s+(open)\\s*[:：]?\\s*([\\s\\S]*?)(?=(critical)\\s+(${catPattern})\\s+(open)|$)`, "gi");
     }
 
     function extractCriticalItems(text) {
@@ -472,7 +505,9 @@
 
     function findProjectColumn(rows) {
       for (let r = 0; r < Math.min(rows.length, 20); r++) {
+        if (isRowHidden(findProjectColumn.currentSheet, r)) continue;
         for (let c = 0; c < (rows[r] || []).length; c++) {
+          if (isColHidden(findProjectColumn.currentSheet, c)) continue;
           const text = cleanText(rows[r][c]).toLowerCase();
           if (text === "project" || text === "project name" || text.includes("project:")) return c;
         }
@@ -487,18 +522,26 @@
 
     function scanCritical(workbook, fileName) {
       const results = [];
+      const seen = new Set();
       for (const sheetName of workbook.SheetNames) {
+        if (isSheetHidden(workbook, sheetName)) continue;
         const sheet = workbook.Sheets[sheetName];
         const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "", raw: false });
+        findProjectColumn.currentSheet = sheet;
         const projectCol = findProjectColumn(rows);
+        findProjectColumn.currentSheet = null;
         let lastProject = "";
         rows.forEach((row, rowIndex) => {
-          if (!row) return;
-          const currentProject = projectCol >= 0 ? cleanText(row[projectCol]) : "";
+          if (!row || isRowHidden(sheet, rowIndex)) return;
+          const currentProject = (projectCol >= 0 && !isColHidden(sheet, projectCol)) ? cleanText(row[projectCol]) : "";
           if (currentProject) lastProject = currentProject;
           const project = currentProject || lastProject || "N/A";
-          row.forEach((cell) => {
+          row.forEach((cell, colIndex) => {
+            if (isColHidden(sheet, colIndex)) return;
             for (const item of extractCriticalItems(cell)) {
+              const duplicateKey = makeDuplicateKey(project, item.category, item.issue, fileName, sheetName, rowIndex + 1);
+              if (seen.has(duplicateKey)) continue;
+              seen.add(duplicateKey);
               results.push({
                 project,
                 category: item.category,
