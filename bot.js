@@ -348,6 +348,18 @@ async function main() {
     });
   });
 
+  bot.onText(/\/chatid/, async (msg) => {
+    await bot.sendMessage(
+      msg.chat.id,
+      [
+        "你的 Telegram chat id：",
+        String(msg.chat.id),
+        "",
+        "把這個值設定到 Web server 的 TELEGRAM_NOTIFY_CHAT_ID，就可以收到登入與報告通知。",
+      ].join("\n")
+    );
+  });
+
   bot.on("message", async (msg) => {
     const chatId = msg.chat.id;
     const text = msg.text;
@@ -394,7 +406,7 @@ async function main() {
       return;
     }
 
-    if (text === "/start") {
+    if (text === "/start" || text === "/chatid") {
       return;
     }
 

@@ -43,3 +43,16 @@ https://adlink-pm-report.onrender.com
 
 Uploaded files and generated reports are temporary and are cleaned after the configured retention period.
 User accounts created through the UI are stored in `data/web-users.json` on local installs. On free cloud services with ephemeral filesystems, use environment variables for the admin account or add a persistent datastore before relying on UI-created users across redeploys.
+
+## Telegram notifications
+
+The Node.js web server can notify your ADLink PM Telegram bot when users log in, log out, create users, or generate reports.
+
+Set these environment variables:
+
+```bash
+TELEGRAM_BOT_TOKEN=your-bot-token
+TELEGRAM_NOTIFY_CHAT_ID=your-chat-id
+```
+
+Do not put the Telegram bot token in the GitHub Pages static app. Static frontend code is public and cannot safely protect secrets.
