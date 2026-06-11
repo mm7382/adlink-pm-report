@@ -60,7 +60,7 @@ function findUser(store, username) {
 function createUser({ username, password, isAdmin = false, status = "active" }) {
   const cleanUsername = normalizeUsername(username);
   if (!cleanUsername) throw new Error("請輸入帳號名稱。");
-  if (!password || String(password).length < 8) throw new Error("密碼至少需要 8 個字元。");
+  if (!password || String(password).length < 6) throw new Error("密碼至少需要 6 個字元。");
 
   const store = readUsers();
   if (findUser(store, cleanUsername)) {

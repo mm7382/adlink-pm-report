@@ -386,8 +386,17 @@
   </main>
 
   <script>
-    const VALID_USER = "Michael.Chuang";
-    const VALID_PASS = "Michael.Chuang";
+    const VALID_USERS = {
+      "Michael.Chuang": "Michael.Chuang",
+      "Tyler Pei": "Tyler Pei",
+      "Anson JM Lin": "Anson JM Lin",
+      "David Wang": "David Wang",
+      "Eric YH1 Lin": "Eric YH1 Lin",
+      "Frankie Chuang": "Frankie Chuang",
+      "Karl Lin": "Karl Lin",
+      "Michael Chuang": "Michael Chuang",
+      "Sean Ba": "Sean Ba",
+    };
     const EXCLUDE = ["done", "closed", "resolved", "fixed"];
     const CATEGORIES = [
       "Linux BSP", "EMC", "RF", "Safety", "ME", "Thermal", "SIE", "SE",
@@ -655,7 +664,7 @@
 
     $("loginButton").addEventListener("click", () => {
       const username = $("username").value.trim();
-      if (username === VALID_USER && $("password").value === VALID_PASS) {
+      if (VALID_USERS[username] && $("password").value === VALID_USERS[username]) {
         document.body.className = "loggedIn";
         $("sessionUser").textContent = `已登入：${username}`;
         $("loginNotice").hidden = false;
