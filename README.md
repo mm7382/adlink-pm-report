@@ -15,7 +15,13 @@ Open http://localhost:3000/login.
 
 This app needs a Node.js backend for Excel upload and report generation, so it cannot run on GitHub Pages.
 
-Use `render.yaml` as the Render Blueprint. Required environment variable:
+Use `render.yaml` as the Render Blueprint:
+
+```text
+https://render.com/deploy?repo=https://github.com/mm7382/adlink-pm-report
+```
+
+Required environment variable:
 
 ```bash
 WEB_ADMIN_PASSWORD=your-strong-password
