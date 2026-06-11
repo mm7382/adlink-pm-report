@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ADLink PM Report Login</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body class="authPage">
+  <main class="authShell">
+    <section class="authPanel">
+      <div class="appBrand"><span>ADLINK</span> SE Project Tools</div>
+      <h1>ADLink PM Report</h1>
+      <form method="post" action="/login" class="stack">
+        <label>
+          帳號名稱
+          <input name="username" type="text" autocomplete="username" required autofocus>
+        </label>
+        <label>
+          密碼
+          <input name="password" type="password" autocomplete="current-password" required>
+        </label>
+        <button type="submit">登入</button>
+      </form>
+    </section>
+  </main>
+</body>
+</html>

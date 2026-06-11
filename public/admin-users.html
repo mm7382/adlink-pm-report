@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>管理使用者 - ADLink PM Report</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <div class="appBrand"><span>ADLINK</span> SE Project Tools</div>
+      <h1>管理使用者</h1>
+      <p>新增可登入上傳 Excel 的帳號。</p>
+    </div>
+    <div class="headerActions">
+      <a class="secondaryLink" href="/">回到上傳頁</a>
+      <form method="post" action="/logout">
+        <button class="secondary" type="submit">登出</button>
+      </form>
+    </div>
+  </header>
+
+  <main class="layout twoColumn">
+    <section class="panel">
+      <h2>新增使用者</h2>
+      <form id="userForm" class="stack formWithTitle">
+        <label>
+          帳號名稱
+          <input id="username" name="username" type="text" autocomplete="off" required>
+        </label>
+        <label>
+          初始密碼
+          <input id="password" name="password" type="password" minlength="8" required>
+        </label>
+        <label class="checkboxLabel">
+          <input id="isAdmin" name="isAdmin" type="checkbox">
+          管理員
+        </label>
+        <button id="addUserButton" type="submit">新增使用者</button>
+      </form>
+      <div id="adminStatus" class="status" aria-live="polite"></div>
+    </section>
+
+    <section class="panel">
+      <h2>建議帳號名稱</h2>
+      <div id="suggestedUsers" class="suggestedUsers"></div>
+    </section>
+
+    <section class="panel fullWidth">
+      <h2>目前使用者</h2>
+      <div id="usersList" class="usersList"></div>
+    </section>
+  </main>
+
+  <script src="/admin.js"></script>
+</body>
+</html>

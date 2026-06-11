@@ -1,0 +1,349 @@
+:root {
+  color-scheme: light;
+  --bg: #f4f6f7;
+  --panel: #ffffff;
+  --text: #1b1f24;
+  --muted: #5e6a75;
+  --line: #d9dee2;
+  --accent: #c8102e;
+  --accent-dark: #9f0c23;
+  --se: #006b6f;
+  --danger: #b42318;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+body::after {
+  content: "Michael Chuang · ADLINK PM";
+  position: fixed;
+  right: 18px;
+  bottom: 14px;
+  z-index: 1000;
+  color: rgba(27, 31, 36, 0.28);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0;
+  pointer-events: none;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 28px clamp(20px, 5vw, 56px);
+  border-bottom: 4px solid var(--accent);
+  background: linear-gradient(90deg, #ffffff 0%, #ffffff 58%, #eef7f7 100%);
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.currentUser {
+  color: var(--muted);
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.appBrand {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 10px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.appBrand span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  padding: 0 8px;
+  border-left: 6px solid var(--accent);
+  background: #f4f6f7;
+  color: var(--text);
+}
+
+h1,
+h2,
+p {
+  margin: 0;
+}
+
+h1 {
+  font-size: 24px;
+  line-height: 1.2;
+  position: relative;
+  padding-left: 18px;
+}
+
+h1::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 3px;
+  width: 6px;
+  height: 24px;
+  background: var(--accent);
+}
+
+h2 {
+  font-size: 17px;
+}
+
+p {
+  color: var(--muted);
+  margin-top: 6px;
+}
+
+.layout {
+  width: min(880px, calc(100% - 40px));
+  margin: 36px auto;
+}
+
+.twoColumn {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 0.75fr);
+  gap: 18px;
+}
+
+.panel,
+.authPanel,
+.reportItem {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.panel,
+.authPanel {
+  padding: 24px;
+}
+
+.fullWidth {
+  grid-column: 1 / -1;
+}
+
+.formWithTitle {
+  margin-top: 18px;
+}
+
+.stack {
+  display: grid;
+  gap: 18px;
+}
+
+label {
+  display: grid;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+input,
+select,
+button {
+  width: 100%;
+  min-height: 42px;
+  border-radius: 6px;
+  font: inherit;
+}
+
+input,
+select {
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--text);
+  padding: 9px 11px;
+}
+
+button,
+.reportItem a,
+.secondaryLink {
+  border: 0;
+  background: var(--accent);
+  color: #fff;
+  cursor: pointer;
+  font-weight: 650;
+  text-decoration: none;
+}
+
+button:hover,
+.reportItem a:hover,
+.secondaryLink:hover {
+  background: var(--accent-dark);
+}
+
+button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+button.secondary {
+  width: auto;
+  min-width: 84px;
+  padding: 0 16px;
+  background: #eef2f6;
+  color: var(--text);
+}
+
+.secondaryLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  border-radius: 6px;
+  padding: 0 16px;
+  background: #eef2f6;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text);
+}
+
+.checkboxLabel input {
+  width: 18px;
+  min-height: 18px;
+}
+
+.status {
+  margin-top: 18px;
+  min-height: 24px;
+  color: var(--muted);
+}
+
+.status.ok {
+  color: var(--accent-dark);
+}
+
+.status.error {
+  color: var(--danger);
+}
+
+.results {
+  display: grid;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.suggestedUsers {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.nameChip {
+  width: auto;
+  min-height: 34px;
+  padding: 0 12px;
+  background: #eef7f7;
+  color: var(--text);
+  border: 1px solid #bfd9da;
+}
+
+.nameChip:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+
+.usersList {
+  display: grid;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.userRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.userRow div {
+  display: grid;
+  gap: 4px;
+}
+
+.userRow span,
+.userRow small {
+  color: var(--muted);
+}
+
+.reportItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 18px;
+}
+
+.reportItem a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  border-radius: 6px;
+  padding: 0 14px;
+  white-space: nowrap;
+}
+
+.authPage {
+  display: grid;
+  place-items: center;
+  padding: 20px;
+}
+
+.authShell {
+  width: min(420px, 100%);
+}
+
+.authPanel h1 {
+  margin-bottom: 22px;
+}
+
+@media print {
+  body::after {
+    color: rgba(27, 31, 36, 0.2);
+  }
+}
+
+@media (max-width: 640px) {
+  .topbar,
+  .reportItem {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .headerActions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .twoColumn {
+    grid-template-columns: 1fr;
+  }
+}

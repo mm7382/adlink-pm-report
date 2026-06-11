@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ADLink PM Report</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <div class="appBrand"><span>ADLINK</span> SE Project Tools</div>
+      <h1>ADLink PM Report</h1>
+      <p>上傳 Excel 後產生 Critical Issues 或紅藍字體 HTML 報告。</p>
+    </div>
+    <div class="headerActions">
+      <span id="currentUser" class="currentUser"></span>
+      <a id="adminLink" class="secondaryLink" href="/admin/users" hidden>管理使用者</a>
+      <form method="post" action="/logout">
+        <button class="secondary" type="submit">登出</button>
+      </form>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="panel">
+      <form id="uploadForm" class="stack">
+        <label>
+          Excel 檔案
+          <input id="excel" name="excel" type="file" accept=".xlsx,.xls,.xlsm" required>
+        </label>
+
+        <label>
+          分析類型
+          <select id="mode" name="mode">
+            <option value="critical">Critical Issues</option>
+            <option value="red-blue">紅藍字體</option>
+            <option value="both">兩種都產生</option>
+          </select>
+        </label>
+
+        <button id="submitButton" type="submit">產生報告</button>
+      </form>
+    </section>
+
+    <section id="status" class="status" aria-live="polite"></section>
+    <section id="results" class="results"></section>
+  </main>
+
+  <script src="/app.js"></script>
+</body>
+</html>

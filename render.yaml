@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: adlink-pm-report
+    runtime: node
+    plan: free
+    buildCommand: npm ci
+    startCommand: npm run start:web
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: WEB_ADMIN_USERNAME
+        value: Michael.Chuang
+      - key: WEB_ADMIN_PASSWORD
+        sync: false
+      - key: WEB_MAX_UPLOAD_MB
+        value: "50"
+      - key: WEB_JOB_RETENTION_DAYS
+        value: "7"
+      - key: WEB_SECURE_COOKIE
+        value: "true"
