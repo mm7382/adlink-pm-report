@@ -48,6 +48,36 @@
       background: linear-gradient(90deg, #ffffff 0%, #ffffff 58%, #eef7f7 100%);
     }
 
+    .titleBlock {
+      min-width: 0;
+    }
+
+    .adlinkLogo {
+      display: block;
+      width: min(360px, 72vw);
+      height: auto;
+      margin-bottom: 16px;
+      border-radius: 8px;
+      background: #222d2f;
+    }
+
+    .sessionBar {
+      display: none;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .loggedIn .sessionBar {
+      display: flex;
+    }
+
+    .sessionUser {
+      color: var(--se);
+      font-size: 14px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
     .brand {
       display: inline-flex;
       align-items: center;
@@ -157,6 +187,16 @@
     button:hover, .linkButton:hover { background: var(--red-dark); }
     button:disabled { opacity: 0.6; cursor: wait; }
 
+    .secondaryButton {
+      background: #eef2f6;
+      color: var(--text);
+      border: 1px solid var(--line);
+    }
+
+    .secondaryButton:hover {
+      background: #dfe7eb;
+    }
+
     .status {
       min-height: 24px;
       color: var(--muted);
@@ -254,6 +294,7 @@
     }
 
     .loginOnly .app { display: none; }
+    .loginOnly .sessionBar { display: none; }
     .loggedIn .login { display: none; }
 
     @media (max-width: 760px) {
@@ -263,15 +304,24 @@
       .topbar {
         display: grid;
       }
+      .sessionBar {
+        align-items: stretch;
+        flex-direction: column;
+      }
     }
   </style>
 </head>
 <body class="loginOnly">
   <header class="topbar">
-    <div>
+    <div class="titleBlock">
+      <img class="adlinkLogo" src="adlink-logo.png" alt="ADLINK Leading Edge AI Computing">
       <div class="brand"><span>ADLINK</span> SE Project Tools</div>
       <h1>ADLink PM Report</h1>
       <p>GitHub Pages 靜態版：Excel 只在你的瀏覽器內分析，不會上傳到伺服器。</p>
+    </div>
+    <div class="sessionBar">
+      <span id="sessionUser" class="sessionUser"></span>
+      <button id="logoutButton" class="secondaryButton" type="button">登出</button>
     </div>
   </header>
 
@@ -292,6 +342,8 @@
     </section>
 
     <section class="app">
+      <section id="loginNotice" class="panel status ok" hidden></section>
+
       <section class="panel">
         <div class="grid">
           <label>
@@ -555,16 +607,36 @@
       `).join("");
       return `<!doctype html>${document.documentElement.outerHTML
         .replace(/<script[\s\S]*?<\/script>/g, "")
-        .replace(/<body[\s\S]*?<\/body>/, `<body class="loggedIn"><header class="topbar"><div><div class="brand"><span>ADLINK</span> SE Project Intelligence Report</div><h1>ADLink PM HTML Report</h1><p>產生時間：${escapeHtml(generatedAt)}</p></div></header><main class="shell">${cards || '<section class="panel empty">目前沒有結果。</section>'}</main></body>`)}`;
+        .replace(/<body[\s\S]*?<\/body>/, `<body class="loggedIn"><header class="topbar"><div class="titleBlock"><img class="adlinkLogo" src="adlink-logo.png" alt="ADLINK Leading Edge AI Computing"><div class="brand"><span>ADLINK</span> SE Project Intelligence Report</div><h1>ADLink PM HTML Report</h1><p>產生時間：${escapeHtml(generatedAt)}</p></div></header><main class="shell">${cards || '<section class="panel empty">目前沒有結果。</section>'}</main></body>`)}`;
     }
 
     $("loginButton").addEventListener("click", () => {
-      if ($("username").value === VALID_USER && $("password").value === VALID_PASS) {
+      const username = $("username").value.trim();
+      if (username === VALID_USER && $("password").value === VALID_PASS) {
         document.body.className = "loggedIn";
+        $("sessionUser").textContent = `已登入：${username}`;
+        $("loginNotice").hidden = false;
+        $("loginNotice").textContent = `已登入：${username}`;
+        $("loginStatus").textContent = "";
       } else {
         $("loginStatus").textContent = "帳號或密碼錯誤。";
         $("loginStatus").className = "status error";
       }
+    });
+
+    $("logoutButton").addEventListener("click", () => {
+      document.body.className = "loginOnly";
+      $("sessionUser").textContent = "";
+      $("loginNotice").hidden = true;
+      $("loginNotice").textContent = "";
+      $("status").textContent = "";
+      $("cards").innerHTML = "";
+      $("summary").hidden = true;
+      $("toolbar").hidden = true;
+      $("downloadPanel").hidden = true;
+      $("excelInput").value = "";
+      $("searchInput").value = "";
+      state.items = [];
     });
 
     $("analyzeButton").addEventListener("click", async () => {

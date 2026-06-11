@@ -78,7 +78,7 @@ async function loadCurrentUser() {
     const user = payload.user;
 
     if (user) {
-      currentUserEl.textContent = user.username;
+      currentUserEl.textContent = `已登入：${user.username}`;
       adminLink.hidden = !user.isAdmin;
     }
   } catch (err) {

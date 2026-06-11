@@ -219,6 +219,10 @@ app.get("/style.css", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "style.css"));
 });
 
+app.get("/adlink-logo.png", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "adlink-logo.png"));
+});
+
 app.get("/app.js", requireAuth, (req, res) => {
   res.sendFile(path.join(__dirname, "public", "app.js"));
 });

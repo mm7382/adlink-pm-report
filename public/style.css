@@ -46,6 +46,24 @@ body::after {
   background: linear-gradient(90deg, #ffffff 0%, #ffffff 58%, #eef7f7 100%);
 }
 
+.titleBlock {
+  min-width: 0;
+}
+
+.adlinkLogo {
+  display: block;
+  width: min(360px, 72vw);
+  height: auto;
+  margin-bottom: 16px;
+  border-radius: 8px;
+  background: #222d2f;
+}
+
+.authLogo {
+  width: 100%;
+  margin-bottom: 20px;
+}
+
 .headerActions {
   display: flex;
   align-items: center;
@@ -53,8 +71,9 @@ body::after {
 }
 
 .currentUser {
-  color: var(--muted);
+  color: var(--se);
   font-size: 14px;
+  font-weight: 800;
   white-space: nowrap;
 }
 
